@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
 import debounce from 'lodash/debounce';
+import { useParams } from 'react-router-dom';
+import { useToastContext } from '@librechat/client';
+import { Constants } from 'librechat-data-provider';
 import {
   EModelEndpoint,
   PermissionBits,
@@ -33,6 +36,7 @@ type ModelSelectorContextType = {
   agentsMap: t.TAgentsMap | undefined;
   assistantsMap: t.TAssistantsMap | undefined;
   endpointsConfig: t.TEndpointsConfig;
+  isModelLocked: boolean;
 
   // Functions
   endpointRequiresUserKey: (endpoint: string) => boolean;
@@ -67,6 +71,13 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
     useModelSelectorChatContext();
   const localize = useLocalize();
   const { announcePolite } = useLiveAnnouncer();
+  const { showToast } = useToastContext();
+
+  const { conversationId: routeConversationId } = useParams();
+  const isNewChat = routeConversationId == null || routeConversationId === Constants.NEW_CONVO;
+
+  const isModelLocked = startupConfig?.interface?.lockModelPerConversation === true && !isNewChat;
+
   const modelSpecs = useMemo(() => {
     /** Labels are normalized at the startup-config query boundary. */
     const specs = startupConfig?.modelSpecs?.list ?? [];
@@ -222,6 +233,10 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
 
   const handleSelectEndpoint = useCallback(
     (endpoint: Endpoint) => {
+      if (isModelLocked) {
+        showToast({ message: localize('com_ui_model_locked'), status: 'warning' });
+        return;
+      }
       if (!endpoint.hasModels) {
         if (endpoint.value) {
           onSelectEndpoint?.(endpoint.value);
@@ -233,7 +248,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
         });
       }
     },
-    [onSelectEndpoint],
+    [onSelectEndpoint, isModelLocked, localize, showToast],
   );
 
   const handleSelectModel = useCallback(
@@ -283,6 +298,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
       endpointRequiresUserKey,
       setSearchValue: setDebouncedSearchValue,
       ...keyProps,
+      isModelLocked,
     }),
     [
       searchValue,
@@ -302,6 +318,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
       endpointRequiresUserKey,
       setDebouncedSearchValue,
       keyProps,
+      isModelLocked,
     ],
   );
 

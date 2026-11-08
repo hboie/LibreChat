@@ -40,6 +40,7 @@ function ModelSelectorContent() {
     keyDialogOpen,
     onOpenChange,
     keyDialogEndpoint,
+    isModelLocked,
   } = useModelSelectorContext();
 
   const selectedIcon = useMemo(
@@ -68,12 +69,20 @@ function ModelSelectorContent() {
   const trigger = (
     <TooltipAnchor
       aria-label={localize('com_ui_select_model')}
-      description={modelSelectorHint}
+      description={isModelLocked ? localize('com_ui_model_locked_tooltip') : modelSelectorHint}
       render={
         <button
           data-testid="model-selector-button"
           aria-keyshortcuts={modelSelectorAriaKey}
+          aria-disabled={isModelLocked}
           className="border-border-chrome bg-presentation text-text-primary hover:bg-surface-active-alt rounded-theme-control my-1 flex h-9 max-w-full items-center gap-2 border px-3 py-2 text-sm"
+          onClick={(e) => {
+            if (isModelLocked) {
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
+          }}
           aria-label={localize('com_ui_select_model')}
         >
           {selectedIcon && React.isValidElement(selectedIcon) && (
@@ -92,6 +101,9 @@ function ModelSelectorContent() {
       <Menu
         values={selectedValues}
         onValuesChange={(values: Record<string, any>) => {
+          if (isModelLocked) {
+            return;
+          }
           setSelectedValues({
             endpoint: values.endpoint || '',
             model: values.model || '',
