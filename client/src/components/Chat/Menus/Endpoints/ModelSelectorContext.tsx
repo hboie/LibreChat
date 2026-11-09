@@ -18,7 +18,12 @@ import {
   useEndpoints,
   useLocalize,
 } from '~/hooks';
-import { useAgentsMapContext, useAssistantsMapContext, useLiveAnnouncer } from '~/Providers';
+import {
+  useAgentsMapContext,
+  useAssistantsMapContext,
+  useLiveAnnouncer,
+  useChatContext,
+} from '~/Providers';
 import { useGetEndpointsQuery, useListAgentsQuery } from '~/data-provider';
 import { useModelSelectorChatContext } from './ModelSelectorChatContext';
 import useSelectMention from '~/hooks/Input/useSelectMention';
@@ -72,11 +77,13 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
   const localize = useLocalize();
   const { announcePolite } = useLiveAnnouncer();
   const { showToast } = useToastContext();
+  const { isSubmitting } = useChatContext();
 
   const { conversationId: routeConversationId } = useParams();
   const isNewChat = routeConversationId == null || routeConversationId === Constants.NEW_CONVO;
 
-  const isModelLocked = startupConfig?.interface?.lockModelPerConversation === true && !isNewChat;
+  const lockEnabled = startupConfig?.interface?.lockModelPerConversation === true;
+  const isModelLocked = lockEnabled && (!isNewChat || isSubmitting);
 
   const modelSpecs = useMemo(() => {
     /** Labels are normalized at the startup-config query boundary. */

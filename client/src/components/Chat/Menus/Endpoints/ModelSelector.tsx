@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { TooltipAnchor } from '@librechat/client';
 import { getConfigDefaults } from 'librechat-data-provider';
+import { TooltipAnchor, disabledInkClasses } from '@librechat/client';
 import type { ModelSelectorProps } from '~/common';
 import {
   renderModelSpecs,
@@ -15,6 +15,7 @@ import { getSelectedIcon, getDisplayValue } from './utils';
 import { CustomMenu as Menu } from './CustomMenu';
 import DialogManager from './DialogManager';
 import { useLocalize } from '~/hooks';
+import { cn } from '~/utils';
 
 const defaultInterface = getConfigDefaults().interface;
 
@@ -75,7 +76,11 @@ function ModelSelectorContent() {
           data-testid="model-selector-button"
           aria-keyshortcuts={modelSelectorAriaKey}
           aria-disabled={isModelLocked}
-          className="border-border-chrome bg-presentation text-text-primary hover:bg-surface-active-alt rounded-theme-control my-1 flex h-9 max-w-full items-center gap-2 border px-3 py-2 text-sm"
+          className={cn(
+            'border-border-chrome bg-presentation text-text-primary hover:bg-surface-active-alt rounded-theme-control my-1 flex h-9 max-w-full items-center gap-2 border px-3 py-2 text-sm',
+            'aria-disabled:cursor-not-allowed aria-disabled:opacity-70',
+            disabledInkClasses,
+          )}
           onClick={(e) => {
             if (isModelLocked) {
               e.preventDefault();
