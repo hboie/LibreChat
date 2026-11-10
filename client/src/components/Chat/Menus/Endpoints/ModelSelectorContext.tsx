@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
 import debounce from 'lodash/debounce';
-import { useParams } from 'react-router-dom';
 import { useToastContext } from '@librechat/client';
-import { Constants } from 'librechat-data-provider';
 import {
   EModelEndpoint,
   PermissionBits,
@@ -18,15 +16,11 @@ import {
   useEndpoints,
   useLocalize,
 } from '~/hooks';
-import {
-  useAgentsMapContext,
-  useAssistantsMapContext,
-  useLiveAnnouncer,
-  useChatContext,
-} from '~/Providers';
+import { useAgentsMapContext, useAssistantsMapContext, useLiveAnnouncer } from '~/Providers';
 import { useGetEndpointsQuery, useListAgentsQuery } from '~/data-provider';
 import { useModelSelectorChatContext } from './ModelSelectorChatContext';
 import useSelectMention from '~/hooks/Input/useSelectMention';
+import useIsModelLocked from '~/hooks/Input/useIsModelLocked';
 import { filterItems } from './utils';
 
 type ModelSelectorContextType = {
@@ -77,13 +71,8 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
   const localize = useLocalize();
   const { announcePolite } = useLiveAnnouncer();
   const { showToast } = useToastContext();
-  const { isSubmitting } = useChatContext();
 
-  const { conversationId: routeConversationId } = useParams();
-  const isNewChat = routeConversationId == null || routeConversationId === Constants.NEW_CONVO;
-
-  const lockEnabled = startupConfig?.interface?.lockModelPerConversation === true;
-  const isModelLocked = lockEnabled && (!isNewChat || isSubmitting);
+  const isModelLocked = useIsModelLocked();
 
   const modelSpecs = useMemo(() => {
     /** Labels are normalized at the startup-config query boundary. */

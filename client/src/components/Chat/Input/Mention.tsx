@@ -5,6 +5,7 @@ import type { RecoilState } from 'recoil';
 import type { ConvoGenerator } from '~/common';
 import { useGetConversation, useLocalize, TranslationKeys } from '~/hooks';
 import useSelectMention from '~/hooks/Input/useSelectMention';
+import useIsModelLocked from '~/hooks/Input/useIsModelLocked';
 import { useAssistantsMapContext } from '~/Providers';
 import useMentions from '~/hooks/Input/useMentions';
 
@@ -30,6 +31,8 @@ function MentionContent({
   const getConversation = useGetConversation(0);
   const assistantsMap = useAssistantsMapContext();
   const setShowPopover = useSetRecoilState(popoverAtom);
+  const isLockedForConversation = useIsModelLocked();
+  const isModelLocked = commandChar === '@' && isLockedForConversation;
   const {
     options,
     presets,
@@ -47,6 +50,7 @@ function MentionContent({
     endpointsConfig,
     getConversation,
     newConversation,
+    isModelLocked,
   });
 
   return (
