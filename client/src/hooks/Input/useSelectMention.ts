@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useRecoilValue } from 'recoil';
 import { useSearchParams } from 'react-router-dom';
-import { useToastContext } from '@librechat/client';
 import { EModelEndpoint, isAgentsEndpoint, isAssistantsEndpoint } from 'librechat-data-provider';
 import type {
   TPreset,
@@ -18,7 +17,8 @@ import {
   getConvoSwitchLogic,
   logger,
 } from '~/utils';
-import { useDefaultConvo, useLocalize } from '~/hooks';
+import useWarnModelLocked from '~/hooks/Input/useWarnModelLocked';
+import { useDefaultConvo } from '~/hooks';
 import store from '~/store';
 
 export default function useSelectMention({
@@ -44,11 +44,7 @@ export default function useSelectMention({
   const modularChat = useRecoilValue(store.modularChat);
   const availableTools = useRecoilValue(store.availableTools);
   const [searchParams] = useSearchParams();
-  const localize = useLocalize();
-  const { showToast } = useToastContext();
-  const warnLocked = useCallback(() => {
-    showToast({ message: localize('com_ui_model_locked_tooltip'), status: 'info' });
-  }, [localize, showToast]);
+  const warnLocked = useWarnModelLocked();
   /**
    * Project scope is read from React Router's search params (the same source the
    * project chip reads), not window.location — new-chat params are written to the

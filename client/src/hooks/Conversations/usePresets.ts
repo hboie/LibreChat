@@ -22,6 +22,8 @@ import {
 } from '~/data-provider';
 import useGetConversation from '~/hooks/Conversations/useGetConversation';
 import useDefaultConvo from '~/hooks/Conversations/useDefaultConvo';
+import useWarnModelLocked from '~/hooks/Input/useWarnModelLocked';
+import useIsModelLocked from '~/hooks/Input/useIsModelLocked';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { NotificationSeverity } from '~/common';
 import useNewConvo from '~/hooks/useNewConvo';
@@ -34,6 +36,8 @@ export default function usePresets(index = 0) {
   const queryClient = useQueryClient();
   const { showToast } = useToastContext();
   const getConversation = useGetConversation(index);
+  const isModelLocked = useIsModelLocked();
+  const warnLocked = useWarnModelLocked();
   const { user, isAuthenticated } = useAuthContext();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [presetToDelete, setPresetToDelete] = useState<TPreset | null>(null);
@@ -171,6 +175,10 @@ export default function usePresets(index = 0) {
 
   const onSelectPreset = (_newPreset: TPreset) => {
     if (!_newPreset) {
+      return;
+    }
+    if (isModelLocked) {
+      warnLocked();
       return;
     }
 
